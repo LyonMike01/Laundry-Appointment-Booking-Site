@@ -1,0 +1,33 @@
+{
+  "name": "laundry-booking-site",
+  "version": "1.0.0",
+  "description": "Booking a lauundry appointment with the laundry-booking-site company",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "bash scripts/dev.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LyonMike01/Laundry-Site.git"
+  },
+  "author": "Titi Tope Mike (Lyon Mike) and Simon Kalu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LyonMike01/Laundry-Site/issues"
+  },
+  "homepage": "https://github.com/LyonMike01/Laundry-Site",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.0",
+    "mailgen": "^2.0.27",
+    "mailgun.js": "^8.2.1",
+    "mongoose": "^7.1.0",
+    "uuidv4": "^6.2.13"
+  }
+}
