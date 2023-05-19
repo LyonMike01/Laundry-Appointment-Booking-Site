@@ -1,57 +1,45 @@
-
 const mongoose = require("mongoose"),
-      { v4 } = require("uuid")
+  { v4 } = require("uuid");
 
-const UserSchema = new mongoose.Schema({
-    
-  fullName: {
-
-        type: String,
-        uppercase: true,
-        required: true,
-        unique: true
-
+const UserSchema = new mongoose.Schema(
+  {
+    fullName: {
+      type: String,
+      uppercase: true,
+      required: true,
+      unique: true,
     },
     email: {
-
-      type: String, 
+      type: String,
       trim: true,
-      unique: true
-      },
+      unique: true,
+    },
 
-      password: {
-
-        type: String,
-        minlength: 6,
-        maxlength: 15,
-
-      },
-      confirmPassword: {
-
-        type: String,
-        minlength: 6,
-        maxlength: 15,
-
-      },
-      role: {
-        type: String,
-        default: "user",
-        enum: ["user", "admin"]
+    password: {
+      type: String,
+      minlength: 6,
+      maxlength: 15,
+    },
+    confirmPassword: {
+      type: String,
+      minlength: 6,
+      maxlength: 15,
+    },
+    role: {
+      type: String,
+      default: "user",
+      enum: ["user", "admin"],
     },
     _id: {
+      type: String,
+      default: () => v4(),
+    },
+  },
 
-        type: String,
-        default: () => v4(),
-
-      }},
-
-
-    {
-
-        timestamps: true
-
-    });
-
+  {
+    timestamps: true,
+  }
+);
 
 const User = mongoose.model("User", UserSchema);
 
