@@ -2,7 +2,6 @@ require("dotenv").config();
 const router = require("express").Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
-const createUser = require("../services/createUser");
 
 router.get("/login/success", async (req, res) => {
   if (req.user) {
@@ -12,9 +11,9 @@ router.get("/login/success", async (req, res) => {
     res.status(200).json({
       error: false,
       token: token,
-      message: "Successfully Loged In",
+      message: "Successfully Logged In",
       userId: req.user.id,
-      userName: req.user.displayName,
+      username: req.user.displayName,
     });
   } else {
     res.status(403).json({ error: true, message: "Not Authorized" });
@@ -24,7 +23,7 @@ router.get("/login/success", async (req, res) => {
 router.get("/login/failed", (req, res) => {
   res.status(401).json({
     error: true,
-    message: "Log in failure",
+    message: "Log in failed",
   });
 });
 
