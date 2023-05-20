@@ -28,7 +28,6 @@ router.get("/login/failed", (req, res) => {
 });
 
 router.get("/", passport.authenticate("google", ["profile", "email"]));
-// router.get("/google", );
 
 router.get(
   "/callback",
