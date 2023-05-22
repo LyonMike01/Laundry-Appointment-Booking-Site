@@ -15,20 +15,22 @@ const UserSchema = new mongoose.Schema(
       unique: true,
     },
 
-    password: {
-      type: String,
-      minlength: 6,
-      maxlength: 15,
-    },
-    confirmPassword: {
-      type: String,
-      minlength: 6,
-      maxlength: 15,
-    },
-    role: {
-      type: String,
-      default: "user",
-      enum: ["user", "admin"],
+      password: {
+
+        type: String,
+        minlength: 6
+
+      },
+      confirmPassword: {
+
+        type: String,
+        minlength: 6
+
+      },
+      role: {
+        type: String,
+        default: "user",
+        enum: ["user", "admin"]
     },
     _id: {
       type: String,
