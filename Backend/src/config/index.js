@@ -1,15 +1,12 @@
-const { development } = require("./development")
-const { production } = require("./production")
+const { development } = require("./development");
+const { production } = require("./production");
 
-
-
-let config = null
-
+let config = null;
 
 if (!process.env.NODE_ENV) {
-    config = development
+  config = development;
 } else {
-    config = (process.env.NODE_ENV === "development") ? development : production
+  config = process.env.NODE_ENV === "development" ? development : production;
 }
 
-global.AppConfig = config
+global.AppConfig = config;

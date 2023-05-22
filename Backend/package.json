@@ -12,7 +12,18 @@
     "type": "git",
     "url": "https://github.com/LyonMike01/Laundry-Site.git"
   },
-  "author": "Titi Tope Mike (Lyon Mike) and Simon Kalu",
+  "author": "Titi Tope Mike (Lyon Mike), Simon Kalu, Deni",
+  "contributors": [
+    {
+      "name": "Titi Tope Mike (Lyon Mike)"
+    },
+    {
+      "name": "Simon Kalu"
+    },
+    {
+      "name": "Deni"
+    }
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/LyonMike01/Laundry-Site/issues"
@@ -20,6 +31,7 @@
   "homepage": "https://github.com/LyonMike01/Laundry-Site",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
@@ -28,6 +40,11 @@
     "mailgen": "^2.0.27",
     "mailgun.js": "^8.2.1",
     "mongoose": "^7.1.0",
+    "passport": "^0.5.3",
+    "passport-google-oauth20": "^2.0.0",
     "uuidv4": "^6.2.13"
+  },
+  "devDependencies": {
+    "npm-package-info": "^0.1.0"
   }
 }
