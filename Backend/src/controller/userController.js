@@ -1,11 +1,21 @@
 const { createUser } = require ("../services/createUser"),
       { userID } = require ("../services/userID"),
+      { userEmail } = require ("../services/userEmail"),
       { deleteUser }  = require ("../services/deleteUser"),
       { getUsers }  = require ("../services/getUsers"),
-      { updateUser }  = require  ("../services/updateUser"),
-      {searchMaleUser} = require("../services/searchMaleUser"),
-      { coookies, verifyToken, generateToken } = require("../utils/token"),
-      {loginCheck} = require ("../services/login.js")
+      { updateUser, updatePassword }  = require  ("../services/updateUser"),
+      
+      { 
+        verifyToken, 
+        generateToken, 
+        generatePasswordResetLink, 
+        generateEmailVerificationLink, 
+        generateUpadateResetLink 
+      }                           = require("../utils/token"),
+
+      { hashPassword, comparePasswords} = require("../utils/hasher"),
+      {loginCheck} = require ("../services/login.js"),
+      maxAge = 3600000
 
 
 
@@ -13,30 +23,38 @@ exports.createNewUser = async (req, res, next) => {
 
   try {
 
-    const newUser = await createUser(req.body);
+     const {password, confirmPassword} = req.body
 
+     if (confirmPassword === password) {
+       
+      //hash password
+       let hashedPassword = await hashPassword(password)
+      const newUser = await createUser(req.body);
 
-    if (newUser) {
-     
-      const token = await generateToken(newUser)
-       res.setHeader("x-access-token", "Bearer "+ token);  
+              if (newUser) {
+              
+                const token = await generateToken(newUser)
+          //       res.setHeader("x-access-token", "Bearer "+ token);  
 
-      res.status(201)
-          .cookie ("jwt", token, {
-                  secure: true,
-                  maxAge:  10000
-                  })
-          .json({
-                msg: "User Created",
-                data: newUser, 
-                token: token
-                });
-      }
+                res.status(201)
+                    .cookie ("jwt", token, {
+                            secure: true,
+                            maxAge:  maxAge
+                            })
+                    .json({
+                          msg: "User Created",
+                          data: newUser
+                          });
+                }
+                
+              }
     else {
+      const err = new Error("Passwords do not match")
       throw err
     } }
+
   catch (err) {
-    return res.status(400).json({ err, message: "OOps!!! Unable to create User" });
+    return res.status(400).json({ err, message: err.message });
   }};
 
         
@@ -122,71 +140,126 @@ exports.getUserByID = async (req, res, next) => {
   }};
 
 
-exports.getMaleUser = async (req, res, next) => {
-  try {
-
-    const key = req.params.gender;
-    
-    if (key != "male") {
-        return res.status(400).json({
-          message: "Only MALE gender can be accessed through this route",
-        }); 
-    }    
-    else {
-      const user =  await searchMaleUser(key);
-      return res.status(200).json({
-        message: "Male Gender Users Successfully seen",
-        data: user 
-      });
-      }
-
- 
-  } catch (err) {
-    return res.status(500).json({ err, message: err.message });
-  }
-};
-
-
 // Login and Forget
 
+exports.Login = async (req, res) => {
+  // retrieve the email and password
+  const { email, password } = req.body;
 
-exports.seeLogin = async (req, res, next) => {
+  const user = await userEmail(email);
+
+
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: `User with email ${email} does not exist.` });
+    }
+
+  // comparing password
+          let hashedPassword = user.password
+           const validPassword = await comparePasswords(password, hashedPassword);
+            if (!validPassword) {
+              return res.status(401).json({ message: "Invalid email or password" });
+            }
+
+  return res.status(200).json({
+      success: true,
+      message: "User login successfully"
+    })
+}
+
+
+
+exports.signout = async (req, res) => {
+  //clear cookies
+  res.clearCookie('jwt')
+}
+
+
+
+
+exports.forgetPassword = async (req, res) => {
+
   try {
-      const {email, password } = req.body;
-      const newUser = await loginCheck(email, password)
-      
-      if(newUser) {
-      const payload = {
-        id: newUser.id,
-        email: newUser.email
+
+  let { email } = req.body
+
+      // find email on the db
+      let user = await userEmail(email)
+      if (user) {
+        console.log("here")
+          const userData = {
+              id: user._id,
+              email: user.email
+          }
+          console.log(user)
+          // compose password reset link data
+          let mailData = {
+              to: userData.email,
+              subject: "Password Reset Mail",
+              body: await generatePasswordResetLink(userData)
+          }
+
+          // send password reset email if email is found in database record
+          console.log(mailData)
       }
-    
-      const token = jwt.sign(
-                       payload, 
-                       secret, 
-                       { expiresIn: maxAge }
-                       );
-      res.cookie ("jwt", token, {
-                        secure: true,
-                        httpOnly: true,
-                        maxAge: (maxAge * 1000)
-                                })
 
-     res.render("secrets");
+      res.status(200).json({
+          message: `We will send a password reset magic link to ${req.body.email} if the record exist`
+      })
 
-  } else{
-    res.render("login")
+  } catch (err) {
+      res.status(400).json({
+          error: err.message
+      })
   }
+}
 
-} catch (err) {
-    console.log(err.message);
+
+
+
+exports.resetPassword = async (req, res) => {
+  try {
+
+      //accept the password reset link from the route param
+      const passwordResetLink = req.params.link
+
+      // check the validity of the password reset link
+      let userLink = await verifyLink(passwordResetLink)
+      
+      if (!userLink) {
+          throw new Error("Link expired")
+      }
+
+      // accept new password from json body
+      const { newPassword, confirmpassword } = req.body
+
+      if (newPassword === confirmpassword) {
+
+        let { email } = userLink
+
+        //hash new password
+        let hashedPassword = await hashPassword(newPassword)
+  
+        //update and save new password
+        const details = {
+          email,
+          hashedPassword,
+          ...req.body
+        };
+        
+        let user = await updatePassword(details);  
+        if (user) { 
+          return res.status(202).json({ msg: "User Details Updated Successfyully", data: user });
+          }
+      }
+        else {
+          throw err
+        }
   }
-};
-
-
-exports.logout = async (req, res) => {
-  res.cookie("jwt", "", {
-      maxAge: "1"
-  })
-  res.render("home")
-} 
+  catch (err) {
+      res.status(400).json({
+          error: err.message
+      })
+  }
+}

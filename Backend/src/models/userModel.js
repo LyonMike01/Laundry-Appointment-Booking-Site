@@ -22,15 +22,13 @@ const UserSchema = new mongoose.Schema({
       password: {
 
         type: String,
-        minlength: 6,
-        maxlength: 15,
+        minlength: 6
 
       },
       confirmPassword: {
 
         type: String,
-        minlength: 6,
-        maxlength: 15,
+        minlength: 6
 
       },
       role: {

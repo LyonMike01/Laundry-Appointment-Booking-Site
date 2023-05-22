@@ -1,9 +1,9 @@
 const { User } = require ("../models/userModel");
 
 
-const userID = async (value) =>{
+const userEmail = async (value) =>{
 
-    const verify = await User.findOne({_id: value});
+    const verify = await User.findOne({email: value});
     
     if (  !verify ) {
       return false
@@ -13,10 +13,11 @@ const userID = async (value) =>{
       id: verify._id,
       email: verify.email,
       role: verify.role,
-      fullName: verify.fullName
-    }   
+      fullName: verify.fullName,
+      password: verify.password,
+    }
     }
 
-module.exports = { userID }
+module.exports = { userEmail }
 
   

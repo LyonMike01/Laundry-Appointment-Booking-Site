@@ -13,7 +13,11 @@ const bookingSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true
-    },
+    },    
+    userid: {
+        type: String,
+        ref: "user",
+      },
     timeSlot: {
         type: Number,
         required: true,
