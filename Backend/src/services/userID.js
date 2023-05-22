@@ -1,4 +1,4 @@
-const { User } = require ("../models/userModel");
+const { User } = require("../models/userModel");
 
 
 const userID = async (value) =>{
@@ -17,6 +17,4 @@ const userID = async (value) =>{
     }   
     }
 
-module.exports = { userID }
-
-  
+module.exports = { userID };
