@@ -24,19 +24,23 @@ const updateUser = async (value) => {
 
 const updatePassword = async (value) => {
 
+
   const { email, ...others } = await value;
 
+
   const details = await checkUser(User, { email });
+
   if (details) {
   const updatedUser = await User.findOneAndUpdate(
-    email,
-    { ...others },
+    {email: email},
+    {...others},
     { new: true }
   ).select("_id");
+
 
   return updatedUser;
   }
   else return false
 };
 
-module.exports = { updateUser };
+module.exports = { updateUser, updatePassword };

@@ -43,7 +43,7 @@ module.exports = {
     // generate password reset link for reseting user password
     generatePasswordResetLink : async (user) => {
         link = jwt.sign(user, SECRET, { expiresIn: "1800000"}) //token expires in 30 minutes
-        return `${HOST}passwordReset/${link}`
+        return `${HOST}/api/resetpassword/${link}`
     },
 
     // generate update role reset link for updating user role

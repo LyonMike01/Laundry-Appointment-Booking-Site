@@ -12,8 +12,10 @@ const {
     getAllUsers,
     getUserByID,
     Login,
+    getMail,
     forgetPassword,
-    resetPassword 
+    resetPassword,
+    verifyLink 
 } = require("../controller/userController")
 
 
@@ -21,7 +23,9 @@ const {
 
 router.post("/createuser", createNewUser);
 router.post("/login", Login);
-router.post("/forgetpassword", forgetPassword);
+router.get("/forgetpassword", forgetPassword);
+router.post("/forgetpassword", getMail);
+router.get('/resetpassword/:link', verifyLink);
 router.post('/resetpassword/:link', resetPassword);
 router.put("/updateuser/:id", updateUserDetails);
 router.delete("/deleteuser/:id", deleteUserDetails);

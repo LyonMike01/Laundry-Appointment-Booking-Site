@@ -3,9 +3,18 @@ const { User } = require ("../models/userModel");
 
 
 const getUsers = async () => {
-  const getUser = await User.find({});
 
-  return getUser;
+  const usersProjection = { 
+    password: false,
+    confirmPassword: false,
+    createdAt: false,
+    updatedAt:  false,
+    __v: false
+};
+
+  const getUsers = User.find({}, usersProjection)
+
+  return getUsers
 };
 
 
