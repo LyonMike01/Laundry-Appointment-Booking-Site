@@ -10,7 +10,8 @@ const { createUser } = require ("../services/createUser"),
         generateToken, 
         generatePasswordResetLink, 
         generateEmailVerificationLink, 
-        generateUpadateResetLink 
+        generateUpadateResetLink,
+        verifyLink 
       }                           = require("../utils/token"),
 
       { hashPassword, comparePasswords} = require("../utils/hasher"),
@@ -27,8 +28,6 @@ exports.createNewUser = async (req, res, next) => {
 
      if (confirmPassword === password) {
        
-      //hash password
-       let hashedPassword = await hashPassword(password)
       const newUser = await createUser(req.body);
 
               if (newUser) {
@@ -103,6 +102,7 @@ exports.deleteUserDetails = async (req, res, next) => {
 exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await getUsers();
+
     return res.status(200).json({
        data: users 
      });
@@ -143,6 +143,8 @@ exports.getUserByID = async (req, res, next) => {
 // Login and Forget
 
 exports.Login = async (req, res) => {
+  
+  try {
   // retrieve the email and password
   const { email, password } = req.body;
 
@@ -150,9 +152,9 @@ exports.Login = async (req, res) => {
 
 
   if (!user) {
-    return res
-      .status(401)
-      .json({ message: `User with email ${email} does not exist.` });
+        return res
+          .status(401)
+          .json({ message: `User with email ${email} does not exist.` });
     }
 
   // comparing password
@@ -162,23 +164,40 @@ exports.Login = async (req, res) => {
               return res.status(401).json({ message: "Invalid email or password" });
             }
 
-  return res.status(200).json({
-      success: true,
-      message: "User login successfully"
-    })
+            payload = {
+              emai: email,
+              password: hashedPassword
+          }
+            const token = await generateToken(payload)
+
+            res.setHeader("x-access-token", "Bearer "+ token);
+            return res.status(200).json({
+              success: true,
+              message: "User login successfully",
+             });
+} catch (err) {
+  return res.status(400).json({ err, message: "Invalide inputs, Please Try again" });
 }
-
-
+}
 
 exports.signout = async (req, res) => {
   //clear cookies
   res.clearCookie('jwt')
 }
 
-
-
-
 exports.forgetPassword = async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: "Frontend redirects to the url below for a POST request",
+      message: `${AppConfig.HOST}/api/forgetpassword`,
+     })
+  } catch (err) {
+    return res.status(404).json({err,  message: err.message });
+  }
+}
+
+
+exports.getMail = async (req, res) => {
 
   try {
 
@@ -187,12 +206,10 @@ exports.forgetPassword = async (req, res) => {
       // find email on the db
       let user = await userEmail(email)
       if (user) {
-        console.log("here")
           const userData = {
               id: user._id,
               email: user.email
           }
-          console.log(user)
           // compose password reset link data
           let mailData = {
               to: userData.email,
@@ -216,11 +233,9 @@ exports.forgetPassword = async (req, res) => {
 }
 
 
-
-
-exports.resetPassword = async (req, res) => {
-  try {
-
+exports.verifyLink = async (req, res) => {
+  try{
+      
       //accept the password reset link from the route param
       const passwordResetLink = req.params.link
 
@@ -230,31 +245,53 @@ exports.resetPassword = async (req, res) => {
       if (!userLink) {
           throw new Error("Link expired")
       }
+      return res.status(200).json({
+        success: "Frontend redirects to the url below for a POST request to reset password",
+        message: `${AppConfig.HOST}/api/resetpassword/........`
+       })
 
-      // accept new password from json body
-      const { newPassword, confirmpassword } = req.body
+  }
+  catch (err) {
+    res.status(400).json({
+        error: err.message
+    })
+}
+}
 
-      if (newPassword === confirmpassword) {
 
-        let { email } = userLink
+exports.resetPassword = async (req, res) => {
+  try {
 
-        //hash new password
-        let hashedPassword = await hashPassword(newPassword)
-  
-        //update and save new password
-        const details = {
-          email,
-          hashedPassword,
-          ...req.body
-        };
+    const passwordResetLink = req.params.link
+    
+    let userLink = await verifyLink(passwordResetLink)
+    let { email } = userLink
         
-        let user = await updatePassword(details);  
-        if (user) { 
-          return res.status(202).json({ msg: "User Details Updated Successfyully", data: user });
-          }
+      // accept new password from json body
+      const { newPassword, confirmNewPassword } = req.body
+
+      if (newPassword === confirmNewPassword) {
+
+          //hash new password
+          const password = await hashPassword(newPassword),
+          confirmPassword = await hashPassword(confirmNewPassword)
+ 
+         //update and save new password
+         const details = {
+           email,
+           password,
+           confirmPassword
+         };
+  
+         let user = await updatePassword(details);  
+         if (user) { 
+           return res.status(202).json({ 
+           success: "Frontend redirects user  to  login route",
+           msg: "User Details Updated Successfyully", data: user });
+           }
       }
         else {
-          throw err
+          throw new Error("Password does not match")
         }
   }
   catch (err) {
