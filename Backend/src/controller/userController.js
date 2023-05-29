@@ -210,6 +210,7 @@ exports.getMail = async (req, res) => {
         userData
       )}>here</a> to reset your password</div>`,
     };
+    console.log(msg)
     sgMail
       .send(msg)
       .then(() => {
